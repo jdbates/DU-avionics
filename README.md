@@ -8,6 +8,10 @@ This library is intended to improve the default flying experience for all player
 
 ## Getting Started
 The simplest way to install DUAL is via one of the three autoconf files in the /autoconf directory.
+
+To install, place one of the provided .conf files in the Game/data/lua/autoconf/custom directory in your DU install folder, and then load the script by right-clicking on your construct's control unit and selecting 'Advanced/Run custom autoconfigure'.  You should see a script labelled 'Dual Universe Avionics Library' in that menu (if you don't, you may need to refresh the list of configuration scripts by selecting 'Advanced/Update custom autoconf list' from that same menu).
+
+The three available autoconfigurations are:
 - DU_Avionics_Library.conf will work for the majority of constructs
 - DU_Avionics_Library_hovercraft.conf is intended for hover-only ground craft, and replicates much of the behavior of the default ground craft configuration (with better handling)
 - DU_Avionics_Library_large.conf is intended for large constructs which have too many hover elements to link automatically.  Currently, in order to access ground distance for hover engines, they must be explicitly linked to a control unit or programming board.  This autoconf disables the auto-linking to provide more control for constructs with slot limitations.  Users can either manually link hover engines (slot doesn't matter), or choose not to link any.  If the latter, the script will still run fine, but won't be able to do automatic ground avoidance.

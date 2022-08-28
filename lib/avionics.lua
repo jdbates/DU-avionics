@@ -1,7 +1,15 @@
 --[[
-    Avionics Library by Stochasty
+    Dual Universe Avionics Library
+    
+    Author: Stochasty
+    Date: 8/28/2022
+    
+    Description: The Dual Universe Avionics Library is a library of avionics functions designed to provide improved
+    in-flight ship controls, such as automatic landing, more responsive pitch/roll/yaw behavior, and
+    much improved hover engine altitude control.
 ]]
 
+-- Helper functions and useful constants
 avionicsMode = {
     none = -1,
     auto = 0,
@@ -173,6 +181,7 @@ function Avionics.getAutoControlMode(self)
     return controlMode
 end
 
+-- Compute pitch, roll, heading, velocity, etc.
 function Avionics.getConstructFlightParameters(self)
     self.worldVertical = -vec3(self.core.getWorldVertical())
 
@@ -195,6 +204,7 @@ function Avionics.getConstructFlightParameters(self)
     self.currentAltitude = self.core.getAltitude()
 end
 
+-- Main flight control loop, should be called from system.onFlush()
 function Avionics.updateEngineCommand(self)
     -- Engine commands
     local keepCollinearity = 1 -- for easier reading
@@ -232,6 +242,7 @@ function Avionics.updateEngineCommand(self)
     self.nav:setEngineForceCommand(brakeTags, brakeAcceleration)
 end
 
+-- Handles pitch, roll, and yaw; includes auto-leveling and maintaining heading.
 function Avionics.computeCommandedAngularAcceleration(self)
     local finalPitchInput = self.controlInputs.pitch + self.system.getControlDeviceForwardInput()
     local finalRollInput = self.controlInputs.roll + self.system.getControlDeviceYawInput()
@@ -335,6 +346,7 @@ function Avionics.computeCommandedAngularAcceleration(self)
     return angularAcceleration
 end
 
+-- Handles longitudinal thrust control.  Largely unchanged from the default DU script.
 function Avionics.computeCommandedLongitudinalAcceleration(self, longitudinalEngineTags)
     local longitudinalAcceleration = vec3(0,0,0)
     local longitudinalCommandType = self.nav.axisCommandManager:getAxisCommandType(axisCommandId.longitudinal)
@@ -346,6 +358,7 @@ function Avionics.computeCommandedLongitudinalAcceleration(self, longitudinalEng
     return longitudinalAcceleration
 end
 
+-- Handles lateral thrust; primary purpose is to bring the ship's forward vector inline with current heading.
 function Avionics.computeCommandedLateralAcceleration(self)
     local lateralVelocityThreshold = 1
 
@@ -362,6 +375,7 @@ function Avionics.computeCommandedLateralAcceleration(self)
     return lateralAcceleration
 end
 
+-- Handles vertical acceleration; attempts to maintain constant ascent/descent unless below minimum hover altitude.
 function Avionics.computeCommandedVerticalAcceleration(self)
     local finalVerticalInput = self.controlInputs.vertical
     local groundInput = self.controlInputs.ground
@@ -394,6 +408,7 @@ function Avionics.computeCommandedVerticalAcceleration(self)
     return verticalAcceleration
 end
 
+-- Handles braking, including automatic braking if set as well as braking for the automatic landing routine.
 function Avionics.computeCommandedBrakeAcceleration(self)
     local finalBrakeInput = self.controlInputs.brake
     if (finalBrakeInput == 0 and self.nav.axisCommandManager.throttle == 0 and self.constructVelocity:len() < self.autoBrakeSpeed) then
@@ -411,6 +426,7 @@ function Avionics.computeCommandedBrakeAcceleration(self)
     return brakeAcceleration
 end
 
+-- Identify which input command was given
 function Avionics.controlInputStart(self, inputType, inputValue)
     inputName = reverseLookup(avionicsInputType, inputType)
     self.controlInputs[inputName] = utils.clamp(self.controlInputs[inputName] + self.controlInputFactors[inputName].start * inputValue, -1, 1)
@@ -429,6 +445,7 @@ function Avionics.controlInputStop(self, inputType)
     self:adjustControlParametersFromInputStop(inputType, inputName)
 end
 
+-- Update commanded flight controls based on user input
 function Avionics.adjustControlParametersFromInputStart(self, inputType, inputName)
     local controlMode = self:getControlMode()
     self.controlFlags[inputName] = avionicsInputFlag.active
@@ -519,6 +536,7 @@ function Avionics.adjustControlParametersFromInputStop(self, inputType, inputNam
     end
 end
 
+-- Sets commanded flight controls for auto-leveling routine.
 function Avionics.autoLevel(self)
     self.controlFlags.pitch = avionicsInputFlag.locked
     self.controlFlags.roll = avionicsInputFlag.locked
@@ -526,6 +544,7 @@ function Avionics.autoLevel(self)
     self.targetRollDeg = 0
  end
 
+-- Determine ground distance for lowest hover engine
 function Avionics.getHoverDistance(self)
     hoverDistance = 9999
     for k,v in pairs(self.control) do

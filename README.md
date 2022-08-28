@@ -22,3 +22,5 @@ For more advanced users who'd like to incorporate these controls into their own 
 For the most part, the flight controls should be familiar to anyone whose already flown with the default flight script.  The only exception to that is that the 'G' key now toggles between landing and flight modes.  When you board your construct, it defaults to starting in 'landed' mode, so you will need to press the 'G' key to be able to takeoff.
 
 Additionally, Option-1 will now automatically level your ship during flight (however, any other control inputs will override this, so make sure to let it finish levelling before you make further adjustments).
+
+Lastly, 'Alt-C' and 'Alt-Space' now control your minimum hover distance.  This can be useful if you need to adjust your minimum altitude settings to help with terrain avoidance.

@@ -19,8 +19,18 @@ The three available autoconfigurations are:
 For more advanced users who'd like to incorporate these controls into their own custom scripts, I've provided library functions in the /lib directory.  avionics.lua contains all of the necessary control code for flying your ship.  The provided autoconf files above give examples of how to call the library from your control unit's Lua.
 
 ## Usage
-For the most part, the flight controls should be familiar to anyone whose already flown with the default flight script.  The only exception to that is that the 'G' key now toggles between landing and flight modes.  When you board your construct, it defaults to starting in 'landed' mode, so you will need to press the 'G' key to be able to takeoff.
+Flight controls are designed to be very similar to the default DU controls.  A couple of key differences:
+- 'G' now toggles between takeoff and landing modes.  All craft start in landing mode when you first board them, so you'll need to press 'G' to take off.
+- Your ship will attempt to maintain altitude when hovering, rather than following terrain.  Use 'SPACE' and 'C' to ascend and descend.
+- As an exception to the above, if you drop below the minimum hover distance (default 5m), your ship will fly up to try to avoid terrain.  You can adjust the minimum hover distance in flight using 'Alt-SPACE' and 'Alt-C'
+- 'Alt-1' will automatically level your ship.  Note that this can be overrided by any other control input, so it's important to let the ship finish leveling before you make further course adjustments.
 
-Additionally, Option-1 will now automatically level your ship during flight (however, any other control inputs will override this, so make sure to let it finish levelling before you make further adjustments).
-
-Lastly, 'Alt-C' and 'Alt-Space' now control your minimum hover distance.  This can be useful if you need to adjust your minimum altitude settings to help with terrain avoidance.
+## Lua Parameters
+These parameters control some of the ship performance settings, and can be edited by selecting 'Edit Lua PArameters' from the control unit's menu.
+- pitchAccelerationFactor: controls how quickly your ship will pitch in response to command input.
+- rollAccelerationFactor: controls how quickly your ship will roll in response to command input.
+- yawAccelerationFactor: controls how quickly your ship will yaw in response to command input.
+- autoBrakeThreshold: maximum speed at which to engage autobrakes.  Default is zero (never autobrake); higher values will attempt to stop you ship whenever your speed falls below the threshold.  Can be useful when you want to hold a ship in place without holding brake.
+- isGroundCraft: toggle between Ground and Flying modes.  Primary difference between the modes is that Ground mode sets maximum pitch/roll at 30 degrees to prevent your ship from flipping.
+- minGroundDistance: This changes the default minimum hover distance.
+- landingSpeed: speed at which your ship will descend when landing mode is engaged.  Be careful setting this too high when you are carrying a heavy load, otherwise your hovers may not have enough thrust to stop you from crashing.

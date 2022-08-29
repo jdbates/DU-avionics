@@ -26,7 +26,7 @@ Flight controls are designed to be very similar to the default DU controls.  A c
 - 'Alt-1' will automatically level your ship.  Note that this can be overrided by any other control input, so it's important to let the ship finish leveling before you make further course adjustments.
 
 ## Lua Parameters
-These parameters control some of the ship performance settings, and can be edited by selecting 'Edit Lua PArameters' from the control unit's menu.
+These parameters control some of the ship performance settings, and can be edited by selecting 'Edit Lua Parameters' from the control unit's menu.
 - pitchAccelerationFactor: controls how quickly your ship will pitch in response to command input.
 - rollAccelerationFactor: controls how quickly your ship will roll in response to command input.
 - yawAccelerationFactor: controls how quickly your ship will yaw in response to command input.

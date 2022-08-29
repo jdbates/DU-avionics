@@ -465,7 +465,7 @@
                     local controlMode = self:getControlMode()
                     self.controlFlags[inputName] = avionicsInputFlag.active
                     if controlMode == avionicsMode.atmosphere then
-                        if inputType == avionicsMode.ground then
+                        if inputType == avionicsInputType.ground then
                             self.minGroundDistance = self:getHoverDistance()
                         end
                         if inputType == avionicsInputType.pitch then
@@ -481,7 +481,7 @@
                             self.targetRollDeg = self.roll
                         end
                     elseif controlMode == avionicsMode.ground then
-                        if inputType == avionicsMode.ground then
+                        if inputType == avionicsInputType.ground then
                             self.minGroundDistance = self:getHoverDistance()
                         end
                         if inputType == avionicsInputType.pitch then
@@ -515,6 +515,9 @@
                             self.targetPitchDeg = self.pitch
                             self.targetRollDeg = self.roll
                         end
+                        if inputType == avionicsInputType.ground then
+                            self.minGroundDistance = self:getHoverDistance()
+                        end
                    elseif controlMode == avionicsMode.ground then                       
                         if inputType == avionicsInputType.pitch then
                             self.targetPitchDeg = self.pitch
@@ -527,6 +530,9 @@
                         if inputType == avionicsInputType.yaw then
                             self.targetPitchDeg = self.pitch
                             self.targetRollDeg = self.roll
+                        end
+                        if inputType == avionicsInputType.ground then
+                            self.minGroundDistance = self:getHoverDistance()
                         end
                     end
                 end
@@ -550,7 +556,7 @@
                         if inputType == avionicsInputType.vertical then
                             self.hoverAltitude = self.currentAltitude
                         end
-                        if inputType == avionicsMode.ground then
+                        if inputType == avionicsInputType.ground then
                             self.minGroundDistance = self:getHoverDistance()
                         end
                     elseif controlMode == avionicsMode.ground then
@@ -569,7 +575,7 @@
                         if inputType == avionicsInputType.vertical then
                             self.hoverAltitude = self.currentAltitude
                         end
-                        if inputType == avionicsMode.ground then
+                        if inputType == avionicsInputType.ground then
                             self.minGroundDistance = self:getHoverDistance()
                         end
                     end

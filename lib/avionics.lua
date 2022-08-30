@@ -134,6 +134,7 @@ function Avionics.new(nav, system, core, control, construct)
     self.minGroundDistance = 10
     self.maxGroundDistance = 250
     self.landingSpeed = 50/3.6
+    self.landingDistance = 50
 
     self.pid = {
         pitch = pid.new(5, 0, 0),
@@ -409,7 +410,7 @@ function Avionics.computeCommandedVerticalAcceleration(self)
         local targetVerticalVelocity = 0
         local hoverAdjustment = 0
         if self:getControlMode() == avionicsMode.landing then
-            targetVerticalVelocity = -self.landingSpeed
+            targetVerticalVelocity = -self.landingSpeed * utils.clamp(hoverDistance/self.landingDistance, 0, 1)
         else
             targetVerticalVelocity = self.constructVelocity:project_on(self.constructForward):dot(self.worldVertical) + groundInput * self.landingSpeed / 2
             self.pid.ground:inject(self.minGroundDistance - hoverDistance)

@@ -287,14 +287,14 @@ function Avionics.computeCommandedAngularAcceleration(self)
         end
 
         if self.controlFlags.yaw == avionicsInputFlag.inactive then
-            self.targetPitchDeg = self.pitch
-            self.targetRollDeg = self.roll
-            if math.abs(self.pid.yaw:get()) < 0.01 then
-                self.controlFlags.yaw = avionicsInputFlag.locked
-            end
+            --self.targetPitchDeg = self.pitch
+            --self.targetRollDeg = self.roll
+            --if math.abs(self.pid.yaw:get()) < 0.01 then
+            --    self.controlFlags.yaw = avionicsInputFlag.locked
+            --end
             finalYawInput = finalYawInput - self.pid.yaw:get()
-        elseif self.controlFlags.yaw == avionicsInputFlag.locked then
-            finalRollInput = finalRollInput - self.pid.yaw:get()
+        --elseif self.controlFlags.yaw == avionicsInputFlag.locked then
+            --finalRollInput = finalRollInput - self.pid.yaw:get()
         end
 
     elseif self:getControlMode() == avionicsMode.atmosphere then
@@ -498,10 +498,10 @@ function Avionics.adjustControlParametersFromInputStart(self, inputType, inputNa
             self.targetPitchDeg = self.pitch
             self.targetRollDeg = self.roll
         end
-        if inputType == avionicsInputType.yaw then
-            self.targetPitchDeg = self.pitch
-            self.targetRollDeg = self.roll
-        end
+        --if inputType == avionicsInputType.yaw then
+            --self.targetPitchDeg = self.pitch
+            --self.targetRollDeg = self.roll
+        --end
     end
 end
 
@@ -533,10 +533,10 @@ function Avionics.adjustControlParametersFromInputLoop(self, inputType, inputNam
             self.targetPitchDeg = self.pitch
             self.targetRollDeg = self.roll
         end
-        if inputType == avionicsInputType.yaw then
-            self.targetPitchDeg = self.pitch
-            self.targetRollDeg = self.roll
-        end
+        --if inputType == avionicsInputType.yaw then
+            --self.targetPitchDeg = self.pitch
+            --self.targetRollDeg = self.roll
+        --end
         if inputType == avionicsInputType.ground then
             self.minGroundDistance = self:getHoverDistance()
         end
@@ -574,10 +574,10 @@ function Avionics.adjustControlParametersFromInputStop(self, inputType, inputNam
             self.targetPitchDeg = self.pitch
             self.targetRollDeg = self.roll
         end
-        if inputType == avionicsInputType.yaw then
-            self.targetPitchDeg = self.pitch
-            self.targetRollDeg = self.roll
-        end
+        --if inputType == avionicsInputType.yaw then
+            --self.targetPitchDeg = self.pitch
+            --self.targetRollDeg = self.roll
+        --end
         if inputType == avionicsInputType.vertical then
             self.hoverAltitude = self.currentAltitude
         end

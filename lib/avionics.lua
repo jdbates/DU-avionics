@@ -417,7 +417,7 @@ function Avionics.computeCommandedVerticalAcceleration(self)
             hoverAdjustment = utils.clamp(self.pid.ground:get(), 0, 10)
         end
 
-        if utils.sign(targetVerticalVelocity) ~= utils.sign(verticalVelocity) then targetVerticalVelocity = 0 end
+        --if utils.sign(targetVerticalVelocity) ~= utils.sign(verticalVelocity) then targetVerticalVelocity = 0 end
 
         self.pid.vertical:inject(targetVerticalVelocity - verticalVelocity)
         finalVerticalInput = finalVerticalInput + hoverAdjustment + self.pid.vertical:get()

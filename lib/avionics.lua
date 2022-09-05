@@ -28,7 +28,8 @@ avionicsInputType = {
     lateral = 5,
     vertical = 6,
     ground = 7,
-    brake = 8,
+    landing = 8,
+    brake = 9,
 }
 
 avionicsInputFlag = {
@@ -58,6 +59,18 @@ function round(x, d)
     return math.floor(x*10^d + 0.5)/10^d
 end
 
+function getLinksByFunctionName(control, fn)
+    links = {}
+    for k,v in pairs(control) do
+        if (type(v) == "table") and (type(v.export) == "table") then
+            if v[fn] ~= nil then
+                links[k] = v
+            end
+        end
+    end
+    return links
+end
+
 -- Avionics Namespace
 Avionics = {}
 Avionics.__index = Avionics
@@ -75,6 +88,9 @@ function Avionics.new(nav, system, core, control, construct)
 
     self.controlMode = avionicsMode.none
     self.oldControlMode = avionicsMode.none
+    
+    self.hoverEngineLinks = getLinksByFunctionName(self.control, 'getDistance')
+    self.databaseLinks = getLinksByFunctionName(self.control, 'getKeys')
 
     self.controlInputs = {
         pitch = 0,
@@ -84,6 +100,7 @@ function Avionics.new(nav, system, core, control, construct)
         lateral = 0,
         vertical = 0,
         ground = 0,
+        landing = 0,
         brake = 0,
     }
 
@@ -414,15 +431,27 @@ function Avionics.computeCommandedVerticalAcceleration(self)
     if self.controlFlags.vertical == avionicsInputFlag.inactive then
         local targetVerticalVelocity = 0
         local hoverAdjustment = 0
-        if self:getControlMode() == avionicsMode.landing then
-            targetVerticalVelocity = -self.landingSpeed * utils.clamp(hoverDistance/self.landingDistance, 0, 1)
+        if hoverDistance ~= nil then
+            if self.nav.axisCommandManager.targetGroundAltitudeActivated == true then
+                self.nav.axisCommandManager:deactivateGroundEngineAltitudeStabilization()
+            end
+            if self:getControlMode() == avionicsMode.landing then
+                targetVerticalVelocity = -self.landingSpeed * utils.clamp(hoverDistance/self.landingDistance, 0, 1)
+            else
+                targetVerticalVelocity = self.constructVelocity:project_on(self.constructForward):dot(self.worldVertical) + groundInput * self.landingSpeed / 2
+                self.pid.ground:inject(self.minGroundDistance - hoverDistance)
+                hoverAdjustment = utils.clamp(self.pid.ground:get(), 0, 10)
+            end
         else
-            targetVerticalVelocity = self.constructVelocity:project_on(self.constructForward):dot(self.worldVertical) + groundInput * self.landingSpeed / 2
-            self.pid.ground:inject(self.minGroundDistance - hoverDistance)
-            hoverAdjustment = utils.clamp(self.pid.ground:get(), 0, 10)
+            if self.nav.axisCommandManager.targetGroundAltitudeActivated == false then
+                self.nav.axisCommandManager:activateGroundEngineAltitudeStabilization(self.minGroundDistance)
+            end
+            if self:getControlMode() == avionicsMode.landing then
+                targetVerticalVelocity = -self.landingSpeed
+            else
+                targetVerticalVelocity = self.constructVelocity:project_on(self.constructForward):dot(self.worldVertical) + groundInput * self.landingSpeed / 2
+            end
         end
-
-        --if utils.sign(targetVerticalVelocity) ~= utils.sign(verticalVelocity) then targetVerticalVelocity = 0 end
 
         self.pid.vertical:inject(targetVerticalVelocity - verticalVelocity)
         finalVerticalInput = finalVerticalInput + hoverAdjustment + self.pid.vertical:get()
@@ -486,6 +515,28 @@ function Avionics.adjustControlParametersFromInputStart(self, inputType, inputNa
             self.targetPitchDeg = self.pitch
             self.targetRollDeg = self.roll
         end
+        if inputType == avionicsInputType.landing then
+            if self.controlMode == avionicsMode.landing then
+                local oldControlMode = self.controlMode
+                self.controlMode = self.oldControlMode
+                self.oldControlMode = oldControlMode
+                self:autoLevel()
+                self.nav.control.retractLandingGears()
+                if self.nav.axisCommandManager.targetGroundAltitudeActivated == true then
+                    self.nav.axisCommandManager:setTargetGroundAltitude(self.minGroundDistance)
+                end
+            else
+                local oldControlMode = self.controlMode
+                self.controlMode = avionicsMode.landing
+                self.oldControlMode = oldControlMode
+                self:autoLevel()
+                self.nav.control.deployLandingGears()
+                if self.nav.axisCommandManager.targetGroundAltitudeActivated == true then
+                    self.nav.axisCommandManager:setTargetGroundAltitude(0)
+                end
+            end
+        end
+    end
     elseif controlMode == avionicsMode.ground then
         if inputType == avionicsInputType.ground then
             self.minGroundDistance = self:getHoverDistance()
@@ -502,6 +553,27 @@ function Avionics.adjustControlParametersFromInputStart(self, inputType, inputNa
             --self.targetPitchDeg = self.pitch
             --self.targetRollDeg = self.roll
         --end
+        if inputType == avionicsInputType.landing then
+            if self.controlMode == avionicsMode.landing then
+                local oldControlMode = self.controlMode
+                self.controlMode = self.oldControlMode
+                self.oldControlMode = oldControlMode
+                self:autoLevel()
+                self.nav.control.retractLandingGears()
+                if self.nav.axisCommandManager.targetGroundAltitudeActivated == true then
+                    self.nav.axisCommandManager:setTargetGroundAltitude(self.minGroundDistance)
+                end
+            else
+                local oldControlMode = self.controlMode
+                self.controlMode = avionicsMode.landing
+                self.oldControlMode = oldControlMode
+                self:autoLevel()
+                self.nav.control.deployLandingGears()
+                if self.nav.axisCommandManager.targetGroundAltitudeActivated == true then
+                    self.nav.axisCommandManager:setTargetGroundAltitude(0)
+                end
+            end
+        end
     end
 end
 
@@ -595,14 +667,16 @@ function Avionics.autoLevel(self)
     end
 
 function Avionics.getHoverDistance(self)
-    hoverDistance = 9999
-    for k,v in pairs(self.control) do
-        if (type(v) == "table") and (type(v.export) == "table") then
-            if v.getDistance ~= nil then
-                d = v.getDistance()
-                if d < hoverDistance then
-                    hoverDistance = d
-                end
+    local hoverDistance = nil
+    for k,v in pairs(self.hoverEngineLinks) do
+        local d = v.getDistance()
+        hoverDistance = (hoverDistance and hoverDistance < d) or d
+    end
+    for k,v in pairs(self.databaseLinks) do
+        if v.hasKey('groundDistance') == 1 then
+            local distanceString = v.getStringValue('groundDistance')
+            for k,v in pairs(json.decode(distanceString)) do
+                hoverDistance = (hoverDistance and hoverDistance < v) or v
             end
         end
     end

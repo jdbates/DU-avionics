@@ -6,7 +6,7 @@ Improved avionics and flight controls for Dual Universe
 ## About DUAL
 This library is an attempt to overhaul the default DU flight controls to provide much better ship handling.
 
-The default flight script, while functional, has poor responsiveness to control input, and almost no responsiveness to when control input is released.  The makes flying harder than necessary, especially for players using keyboard controls.  Also, the default ground engine control script is terrible - it's like trying to drive a car with no shock absorbers - any little bump or dip causes your ship to bounce around wildly.  Lastly, the default script has no correction for the curvature of the world, so on long flights around a planet your ship will literally end up pointing at the sky unless you continually apply pitch corrections.
+The default flight script, while functional, has poor responsiveness to control input, and almost no responsiveness to when control input is released.  This makes flying harder than necessary, especially for players using keyboard controls.  Also, the default ground engine control script is terrible - it's like trying to drive a car with no shock absorbers - any little bump or dip causes your ship to bounce around wildly.  Lastly, the default script has no correction for the curvature of the world, so on long flights around a planet your ship will literally end up pointing at the sky unless you continually apply pitch corrections.
 
 This library is an attempt to fix all of these issues in an easy-to-use and easy-to-edit fashion.
 
